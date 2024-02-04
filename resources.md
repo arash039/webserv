@@ -1,4 +1,7 @@
+https://www.youtube.com/watch?v=bdIiTxtMaKA&list=PL9IEJIKnBJjH_zM5LnovnoaKlXML5qh17&index=1&t=1s
 https://nginx.org/en/docs/http/request_processing.html
+https://man7.org/linux/man-pages/man3/sockaddr.3type.html
+
 
 # functions
 - `strerror`: This function returns a pointer to a text string that describes the error code passed in the argument errno

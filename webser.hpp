@@ -12,6 +12,9 @@
 #include <unistd.h>
 #include <poll.h>
 #include <string.h>
+#include <sys/types.h>
+#include <dirent.h>
+
 
 #define MAX_CLIENTS 100
 

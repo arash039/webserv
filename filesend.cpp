@@ -7,6 +7,23 @@ void sendResponse(int clientSocket, std::string httpResponse, std::string respon
     send(clientSocket, response_data.c_str(), response_data.size(), 0);
 }
 
+void directoryListing(int clientSocket, std::string path) {
+	std::string response_data = "<!DOCTYPE html><html><body>";
+	DIR *dir;
+	struct dirent *ent;
+	if ((dir = opendir(path.c_str())) != NULL) {
+		while ((ent = readdir(dir)) != NULL) {
+			response_data += "<a href=\"" + std::string(ent->d_name) + "\">" + std::string(ent->d_name) + "</a><br>";
+		}
+		closedir(dir);
+	} else {
+		perror("opendir");
+	}
+	response_data += "</body></html>";
+	std::string httpResponse = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: " + std::to_string(response_data.size()) + "\r\n\r\n";
+	sendResponse(clientSocket, httpResponse, response_data);
+}
+
 void parseRequest(std::string request, class WebServer &w) {
 	std::map<std::string, std::string> requestMap;
 	std::string delimiter = "\r\n";
@@ -87,7 +104,7 @@ int main() {
         return 1;
     }
     sockaddr_in server_addr;
-    pollfd fds[MAX_CLIENTS];
+    struct pollfd fds[MAX_CLIENTS];
     int nfds = 1, new_fd;
 
     memset(&server_addr, 0, sizeof(server_addr));
@@ -145,6 +162,7 @@ int main() {
                     //std::string httpResponse = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: " + std::to_string(response_data.size()) + "\r\n\r\n" + response_data;
 					std::string httpResponse = findFile(w.requestMap["GET"], servers[0].locations[0].root, servers);
 					write(fds[i].fd, httpResponse.c_str(), httpResponse.size());
+					//directoryListing(fds[i].fd, servers[0].locations[0].root);
 				} else {
                     close(fds[i].fd);
                     fds[i] = fds[nfds - 1];

@@ -14,6 +14,8 @@
 #include <string.h>
 #include <sys/types.h>
 #include <dirent.h>
+#include <fcntl.h>
+#include <sys/wait.h>
 
 
 #define MAX_CLIENTS 100

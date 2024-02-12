@@ -7,6 +7,46 @@ void sendResponse(int clientSocket, std::string httpResponse, std::string respon
     send(clientSocket, response_data.c_str(), response_data.size(), 0);
 }
 
+void execCgi(int client_fd, const std::string& path) {
+	const char* php_cgi_path = "/usr/bin/php-cgi";
+	const char* script_path = "/home/arash/Desktop/webserv/var/www/cgi-bin/ar.php";
+	const char* argv[] = {
+		php_cgi_path, // PHP-CGI executable
+		script_path,  // Path to the PHP script
+		nullptr      // Null terminator for argument list
+	};
+	pid_t child_pid = fork();
+	int fd = open("/home/arash/Desktop/webserv/var/www/cgi-bin/r.html", O_CREAT | O_RDWR, 0666);
+	if (child_pid == 0) {
+		dup2(fd, 1);
+		execve(php_cgi_path, const_cast<char**>(argv), nullptr);
+		perror("execve failed");
+		exit(1);
+	} else {
+		// Parent process: Wait for the child process to finish
+		int status;
+		waitpid(child_pid, &status, 0);
+		// Handle the child process's exit status
+		if (WIFEXITED(status)) {
+			std::cout << "Child process exited with status: " << WEXITSTATUS(status) << std::endl;
+		} else {
+			std::cerr << "Child process terminated abnormally" << std::endl;
+		}
+		close(fd);
+		std::ifstream html_data("/home/arash/Desktop/webserv/var/www/cgi-bin/r.html");
+		std::string response_data;
+		if (!html_data) {
+			std::cerr << "Could not open file\n";
+			return;
+		}
+		std::stringstream buff;
+		buff << html_data.rdbuf();
+		response_data = buff.str();
+		std::string httpResponse = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: " + std::to_string(response_data.size()) + "\r\n\r\n<pre>" + response_data + "</pre>";
+		send(client_fd, httpResponse.c_str(), httpResponse.size(), 0);
+	}
+}
+
 void directoryListing(int clientSocket, std::string path) {
 	std::string response_data = "<!DOCTYPE html><html><body>";
 	DIR *dir;
@@ -80,7 +120,7 @@ std::string findFile(std::string path, std::string root, std::vector<ServerConfi
 	std::string response_data;
 	if (!html_data) {
 		std::cerr << "Could not open file\n";
-		return "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nContent-Length: 0\r\n\r\n";
+		//return "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nContent-Length: 0\r\n\r\n";
 		//return "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 6\r\n\r\n Hello";
 	}
 	std::stringstream buff;
@@ -163,6 +203,8 @@ int main() {
 					std::string httpResponse = findFile(w.requestMap["GET"], servers[0].locations[0].root, servers);
 					write(fds[i].fd, httpResponse.c_str(), httpResponse.size());
 					//directoryListing(fds[i].fd, servers[0].locations[0].root);
+					//execCgi( fds[i].fd, w.requestMap["GET"]);
+					
 				} else {
                     close(fds[i].fd);
                     fds[i] = fds[nfds - 1];

@@ -30,3 +30,5 @@ https://man7.org/linux/man-pages/man3/sockaddr.3type.html
 - `access`: This function checks the caller’s permissions for a file.
 - `stat`: This function returns information about a file.
 - `opendir`, `readdir`, `closedir`: These functions are used to open, read from, and close a directory stream, respectively.
+
+siege -b -c100 -t5M http://localhost:8080

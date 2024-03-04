@@ -7,14 +7,11 @@ void sendResponse(int clientSocket, std::string httpResponse, std::string respon
     send(clientSocket, response_data.c_str(), response_data.size(), 0);
 }
 
+
 void execCgi(int client_fd, const std::string& path) {
 	const char* php_cgi_path = "/usr/bin/php-cgi";
 	const char* script_path = "/home/arash/Desktop/webserv/var/www/cgi-bin/ar.php";
-	const char* argv[] = {
-		php_cgi_path, // PHP-CGI executable
-		script_path,  // Path to the PHP script
-		nullptr      // Null terminator for argument list
-	};
+	const char* argv[] = {php_cgi_path, script_path, nullptr};
 	pid_t child_pid = fork();
 	int fd = open("/home/arash/Desktop/webserv/var/www/cgi-bin/r.html", O_CREAT | O_RDWR, 0666);
 	if (child_pid == 0) {
@@ -23,10 +20,8 @@ void execCgi(int client_fd, const std::string& path) {
 		perror("execve failed");
 		exit(1);
 	} else {
-		// Parent process: Wait for the child process to finish
 		int status;
 		waitpid(child_pid, &status, 0);
-		// Handle the child process's exit status
 		if (WIFEXITED(status)) {
 			std::cout << "Child process exited with status: " << WEXITSTATUS(status) << std::endl;
 		} else {
@@ -136,9 +131,6 @@ int main() {
 	int listen_fd = socket(AF_INET, SOCK_STREAM, 0);
 	int opt = 1;
 	class WebServer w;
-	//tells the operating system to not reserve the socket after the 
-	//program is terminated, allowing you to immediately rerun your 
-	//program without waiting for the operating system to release the socket. 
     if (setsockopt(listen_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) == -1) {
         perror("setsockopt");
         return 1;
@@ -146,20 +138,12 @@ int main() {
     sockaddr_in server_addr;
     struct pollfd fds[MAX_CLIENTS];
     int nfds = 1, new_fd;
-
     memset(&server_addr, 0, sizeof(server_addr));
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(8080);
-	//This is an IP address that is used when we don't want to bind a 
-	//socket to any specific IP. Basically, while implementing 
-	//communication, we need to bind our socket to an IP address. 
-	//When we don't know the IP address of our machine, we can use the 
-	//special IP address INADDR_ANY.
     server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-
     bind(listen_fd, (struct sockaddr*)&server_addr, sizeof(server_addr));
     listen(listen_fd, 10);
-
     fds[0].fd = listen_fd;
     fds[0].events = POLLIN;
 	int connectionHandled = 0;
@@ -172,7 +156,6 @@ int main() {
         for (int i = 0; i < nfds; i++) {
             if (fds[i].revents == 0)
                 continue;
-
             if (fds[i].fd == listen_fd) {
                 new_fd = accept(listen_fd, NULL, NULL);
                 fds[nfds].fd = new_fd;
@@ -185,21 +168,6 @@ int main() {
                     buffer[len] = '\0';
                     std::cout << "Received: " << std::endl << buffer << std::endl;
 					parseRequest(buffer, w);
-					// Open the HTML file
-                    /* std::ifstream html_data("index.html");
-
-                    if (!html_data) {
-                        std::cerr << "Could not open file\n";
-                        return 1;
-                    } */
-
-                    // Read the file into memory
-                    /* std::stringstream buff;
-                    buff << html_data.rdbuf();
-                    std::string response_data = buff.str(); */
-
-                    // Prepare the HTTP response
-                    //std::string httpResponse = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: " + std::to_string(response_data.size()) + "\r\n\r\n" + response_data;
 					std::string httpResponse = findFile(w.requestMap["GET"], servers[0].locations[0].root, servers);
 					write(fds[i].fd, httpResponse.c_str(), httpResponse.size());
 					//directoryListing(fds[i].fd, servers[0].locations[0].root);

@@ -28,6 +28,7 @@ struct LocationConfig {
     bool allowDirectoryListing;
     std::string indexFile;
     std::string cgiExtension;
+	std::string tryFiles;
 };
 
 struct ServerConfig {

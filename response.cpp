@@ -6,7 +6,7 @@
 /*   By: ashojach <ashojach@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/19 01:27:30 by ashojach          #+#    #+#             */
-/*   Updated: 2024/04/15 13:16:25 by ashojach         ###   ########.fr       */
+/*   Updated: 2024/04/15 21:06:42 by ashojach         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,12 @@ Response::Response(HTTPRequest &request) {
 		requestBodySize = std::atoi(temp.c_str());
 	else
 		requestBodySize = 0;
+	if (request.getHeader("Expect") == "100-continue") {
+		continue_100 = "100-continue";
+		return ;
+	}
+	else
+		continue_100 = "";
 	requestBody = request.body;
 	//std::cout << "Request Body:\n " << requestBody << std::endl;
 	contentDisposition = request.getHeader("Content-Disposition");
@@ -56,8 +62,9 @@ Response::~Response() {
 void Response::distributer(std::vector<ServerConfig> &servers, std::string uri) {
 	std::vector<ServerConfig>::iterator server = findServer(servers);
 	location = findLocation(uri, server);
-	if (errorCheck(location) == 1) {
-		logger("Request error", "error");
+	if (errorCheck(location) == 1 || errorCheck(location) == 2) {
+		if (errorCheck(location) == 1)
+			logger("Request error", "error");
 		NULL;
 	}
 	else if (method == GET) {

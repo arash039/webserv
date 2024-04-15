@@ -6,7 +6,7 @@
 /*   By: ashojach <ashojach@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/05 16:45:48 by ashojach          #+#    #+#             */
-/*   Updated: 2024/04/15 11:53:18 by ashojach         ###   ########.fr       */
+/*   Updated: 2024/04/15 17:48:38 by ashojach         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,64 +46,59 @@ void parseContentDisposition(const std::string& line, FormData& formData) {
 	}
 }
 
-// Main function to parse multipart/form-data content
 FormData Response::parseFormData(const std::string& requestBody, const std::string& boundary) {
-	FormData formData;
+    FormData formData;
 
-	// Boundary strings
-	std::string delimiter = "--" + boundary;
-	std::string endDelimiter = "--" + boundary + "--";
-	
-	// Find start of the first part
-	size_t startPos = requestBody.find(delimiter);
-	if (startPos == std::string::npos)
-	{
-		//std::cout << "No boundary found" << std::endl;
-		return (formData);
-	}
-	startPos += delimiter.length();
-	
-	// Find the header section of the part
-	size_t headerEndPos = requestBody.find("\r\n\r\n", startPos);
-	if (headerEndPos == std::string::npos) {
-		//std::cout << "No headers found" << std::endl;
-		return formData; // No headers end found
-	}
+    std::string delimiter = "--" + boundary;
+    std::string endDelimiter = delimiter + "--";
 
-	std::string headers = requestBody.substr(startPos, headerEndPos - startPos);
-	std::string remaining = requestBody.substr(headerEndPos);
+    size_t startPos = 0;
+    size_t endPos = 0;
 
-	// Find each header line
-	size_t pos = 0;
-	while ((pos = headers.find("\r\n")) != std::string::npos) {
-		std::string headerLine = headers.substr(0, pos);
-		headers.erase(0, pos + 2); // +2 to skip the CR LF characters
+    while ((startPos = requestBody.find(delimiter, startPos)) != std::string::npos) {
+        startPos += delimiter.length();
+        endPos = requestBody.find(delimiter, startPos);
+        if (endPos == std::string::npos) {
+            endPos = requestBody.length();
+        }
 
-		if (headerLine.find("Content-Disposition:") != std::string::npos) {
-			parseContentDisposition(headerLine, formData);
-		} else if (headerLine.find("Content-Type:") != std::string::npos) {
-			size_t typePos = headerLine.find(": ");
-			if (typePos != std::string::npos) {
-				typePos += 2; // Skip past ': '
-				formData.contentType = trim(headerLine.substr(typePos));
-			}
-		}
-	}
+        std::string part = requestBody.substr(startPos, endPos - startPos);
 
-	// Find the start of the content
-	startPos = headerEndPos + 4; // +4 to skip the CR LF characters after headers
+        parsePartData(part, formData);
+        startPos = endPos;
+    }
 
-	// Find the end of the content
-	size_t contentEndPos = requestBody.find("\r\n" + endDelimiter, startPos - 4);
-	if (contentEndPos == std::string::npos) {
-		// If the end delimiter is not found, the content goes to the end of the requestBody
-		contentEndPos = requestBody.length();
-	}
+    return formData;
+}
 
-	formData.content = requestBody.substr(startPos, contentEndPos - endDelimiter.length() - startPos - 4);
-	formData.content = trim(formData.content); // Trim the content
+void parsePartData(const std::string& part, FormData& formData) {
+    size_t headerEndPos = part.find("\r\n\r\n");
+    if (headerEndPos == std::string::npos) {
+        return;
+    }
 
-	return formData;
+    std::string headers = part.substr(0, headerEndPos);
+    std::string content = part.substr(headerEndPos + 4);
+
+    parseHeaders(headers, formData);
+    formData.content = trim(content);
+}
+
+void parseHeaders(const std::string& headers, FormData& formData) {
+    std::istringstream iss(headers);
+    std::string line;
+
+    while (std::getline(iss, line)) {
+        if (line.find("Content-Disposition:") != std::string::npos) {
+            parseContentDisposition(line, formData);
+        } else if (line.find("Content-Type:") != std::string::npos) {
+            size_t typePos = line.find(": ");
+            if (typePos != std::string::npos) {
+                typePos += 2; // Skip past ': '
+                formData.contentType = trim(line.substr(typePos));
+            }
+        }
+    }
 }
 
 std::string Response::getBoundary(const std::string& contentType) {

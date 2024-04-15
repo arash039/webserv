@@ -6,7 +6,7 @@
 /*   By: ashojach <ashojach@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/19 01:27:22 by ashojach          #+#    #+#             */
-/*   Updated: 2024/04/15 11:43:36 by ashojach         ###   ########.fr       */
+/*   Updated: 2024/04/15 21:06:07 by ashojach         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -137,6 +137,15 @@ int Response::errorCheck(LocationConfig location)
 		status_code = 505;
 		reason_phrase = "HTTP Version Not Supported";
 		return 1;
+	}
+	if (continue_100 == "100-continue")
+	{
+		status_code = 417;
+		reason_phrase = "Expectation Failed";
+		//header.push_back("Connection: close");
+		header.push_back("Server: webserv");
+		skipBody = 1;
+		return 2;
 	}
 	if (method == POST && requestBodySize > maxBodySize)
 	{

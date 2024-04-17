@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ashojach <ashojach@student.42berlin.de>    +#+  +:+       +#+        */
+/*   By: lgrimmei <lgrimmei@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/19 01:26:56 by ashojach          #+#    #+#             */
-/*   Updated: 2024/04/15 17:47:44 by ashojach         ###   ########.fr       */
+/*   Updated: 2024/04/16 15:57:04 by lgrimmei         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,14 +80,17 @@ int main(int ac, char **av, char **env)
 	std::set<int> active_fds;
 	std::set<int> usedPorts;
 	std::map<int, std::time_t> last_data_time;
+	std::string file;
 	try {
 		if(ac < 2)
-			std::cerr << "You need to pass the config file as an argument\n";
+			file = "./ConfigFiles/ar1.conf";
 		else if(ac > 2)
+		{
 			std::cerr << "Too many arguments god damn it !\nWe only want one config file as argument..\n";
-		if(ac < 2 || ac > 2)
-			return (1);
-		std::string file = av[1];
+			return (0);
+		}
+		else
+			file = av[1];
 		configParser conf(file, env);
 		//conf.outputParse();
 		servers = ut3.convListToVector(conf.getServerList());

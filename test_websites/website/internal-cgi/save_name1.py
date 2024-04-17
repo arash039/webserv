@@ -7,6 +7,8 @@ cgitb.enable()
 
 res = 0
 
+print("1'name='", file=sys.stderr)
+
 if len(sys.argv) == 2:
 	argument = sys.argv[1]
 	

@@ -23,7 +23,9 @@
 	<section id="Bob_text">
 		<img class="Bob" id="Bob2" src="../img/Bob.gif" alt="Bob2">
 		<img class="Bubble" id="Bubble2" src="../img/Speech_Bubble.png" alt="Bubble2">
-		<p id="bubble_text">I'm glad you followed me "userName".<br>
+		<p id="bubble_text">I'm glad you followed me 
+			<text id="name">Ingognito</text>
+		<br>
 		<br>
 		The wozMachine is somewhere here but<br>
 		I'm not sure where<br>
@@ -52,13 +54,28 @@
 	<section class="footer-section">
 		<div id="footer-placeholder"></div>
 		<script>
-			$(function()
-			{
-				$.get("footer.html", function(data)
-				{
-					$("#footer-placeholder").html(data);
-				});
-			});
-		</script>
+            function getName() {
+                var xhr = new XMLHttpRequest();
+                xhr.open('GET', '/internal-cgi/get_name.py', true);
+                xhr.onload = function () {
+                    if (xhr.status >= 200 && xhr.status < 300)
+                        document.getElementById('name').innerHTML = xhr.responseText;
+                    else
+                        document.getElementById('name').innerHTML = '<p>Incognito</p>';
+                };
+                xhr.onerror = function () {
+                    //document.getElementById('name').innerHTML = '<p>Network error.</p>';
+                };
+                xhr.send();
+            }
+            $(function() {
+                getName();
+                $.get("footer.html", function(data) {
+                    $("#footer-placeholder").html(data);
+                });
+            });
+            // Call the getName() function when the page loads
+            getName();
+        </script>
 	</section>
 </body>

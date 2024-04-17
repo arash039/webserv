@@ -5,6 +5,8 @@ import sys
 
 cgitb.enable()
 
+print("'name='", file=sys.stderr)
+
 # Check if the QUERY_STRING environment variable is set
 if 'QUERY_STRING' in os.environ:
     query_string = os.environ['QUERY_STRING']

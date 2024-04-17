@@ -6,13 +6,13 @@
 #    By: ashojach <ashojach@student.42berlin.de>    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/04/12 23:17:18 by ashojach          #+#    #+#              #
-#    Updated: 2024/04/15 20:59:10 by ashojach         ###   ########.fr        #
+#    Updated: 2024/04/15 22:14:08 by ashojach         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME = webserv
 CC	= c++
-FLAGS	= #-Wall -Werror -Wextra -g3 -std=c++98
+FLAGS	= -Wall -Werror -Wextra -g3 -std=c++98
 SRCS	= main.cpp \
 		 request.cpp \
 		 response.cpp \

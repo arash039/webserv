@@ -18,7 +18,8 @@ To use Webserv, you need to provide a configuration file as a command-line argum
 ```
 
 The server will start and listen for incoming connections on the specified ports. You can monitor the server's activity and any errors or warnings through the custom logger.
-Code Structure
+
+##Code Structure
 
 The main entry point of the application is the main() function, which sets up the server configurations, connections, and the event loop. The key components of the code are:
 

@@ -1,7 +1,7 @@
 # Webserv
 
 Webserv is a C++ web server implementation that can handle multiple server configurations and connections. It uses the poll() system call to monitor and handle incoming connections and requests.
-Features
+Features:
 
 - Supports multiple server configurations and connections
 - Handles HTTP requests and responses
